@@ -1,106 +1,21 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>ALP TECH - JJK Online</title>
+    <title>ALP TECH TEST</title>
     <style>
-        /* Sayfa Ayarları */
-        body { margin: 0; background: #111; color: white; font-family: sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        
-        /* Ekranlar */
-        .screen { position: absolute; text-align: center; background: rgba(20, 20, 20, 0.95); padding: 50px; border-radius: 20px; border: 2px solid #5d00ff; z-index: 100; }
-        .hidden { display: none !important; }
-        
-        button { background: #5d00ff; border: none; color: white; padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 10px; margin: 10px; }
-        button:hover { background: #7b2cff; }
-
-        .char-box { display: flex; gap: 15px; margin: 20px 0; }
-        .card { padding: 20px; border: 2px solid #444; cursor: pointer; border-radius: 10px; background: #222; }
-        .card.active { border-color: #00ffcc; background: #333; }
-
-        /* Oyun Kanvası */
-        #canvas-wrapper { display: none; text-align: center; }
-        canvas { background: #000; border: 3px solid #333; display: block; }
+        body { background: red; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        .box { background: black; padding: 50px; border: 5px solid yellow; text-align: center; }
+        button { padding: 20px; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="start-screen" class="screen">
-        <h1>JJK: CURSED CLASH</h1>
-        <p>ALP TECH Sunar</p>
-        <button onclick="goCharSelect()">OYUNA GİR</button>
+    <div class="box">
+        <h1>JJK OYUNU TEST EKRANI</h1>
+        <p>Eğer bu kırmızı ekranı görüyorsan kod çalışıyor demektir!</p>
+        <button onclick="alert('BAŞARILI! Kod çalışıyor Alptekin!')">TIKLA BANA</button>
     </div>
 
-    <div id="char-screen" class="screen hidden">
-        <h2>Karakterini Seç</h2>
-        <div class="char-box">
-            <div class="card" id="btn-Yuji" onclick="pick('Yuji')">Yuji</div>
-            <div class="card" id="btn-Gojo" onclick="pick('Gojo')">Gojo</div>
-            <div class="card" id="btn-Sukuna" onclick="pick('Sukuna')">Sukuna</div>
-        </div>
-        <button id="fight-btn" class="hidden" onclick="startFight()">DÖVÜŞ!</button>
-    </div>
-
-    <div id="canvas-wrapper">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <p>Hareket: OK TUŞLARI | ALP TECH JJK v1.0</p>
-    </div>
-
-    <script>
-        let hero = "";
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const tuşlar = {};
-
-        // Fonksiyonlar
-        function goCharSelect() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('char-screen').classList.remove('hidden');
-        }
-
-        function pick(isim) {
-            hero = isim;
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            document.getElementById('btn-' + isim).classList.add('active');
-            document.getElementById('fight-btn').classList.remove('hidden');
-        }
-
-        // Oyuncu Objesi
-        const p = { x: 100, y: 300, w: 40, h: 70, dy: 0, yer: true };
-
-        function startFight() {
-            document.getElementById('char-screen').classList.add('hidden');
-            document.getElementById('canvas-wrapper').style.display = 'block';
-            
-            window.addEventListener('keydown', e => tuşlar[e.code] = true);
-            window.addEventListener('keyup', e => tuşlar[e.code] = false);
-            
-            döngü();
-        }
-
-        function döngü() {
-            // Hareket
-            if (tuşlar['ArrowRight']) p.x += 5;
-            if (tuşlar['ArrowLeft']) p.x -= 5;
-            if (tuşlar['ArrowUp'] && p.yer) { p.dy = -15; p.yer = false; }
-
-            // Fizik
-            p.dy += 0.8;
-            p.y += p.dy;
-            if (p.y > 310) { p.y = 310; p.dy = 0; p.yer = true; }
-
-            // Çizim
-            ctx.fillStyle = "#000"; ctx.fillRect(0,0,800,400); // Temizle
-            ctx.fillStyle = "#333"; ctx.fillRect(0, 380, 800, 20); // Yer
-            
-            ctx.fillStyle = (hero === "Gojo") ? "white" : (hero === "Sukuna" ? "red" : "pink");
-            ctx.fillRect(p.x, p.y, p.w, p.h); // Karakter
-            
-            ctx.fillStyle = "white";
-            ctx.fillText(hero, p.x, p.y - 10);
-
-            requestAnimationFrame(döngü);
-        }
-    </script>
 </body>
 </html>
+
