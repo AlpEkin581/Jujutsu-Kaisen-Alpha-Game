@@ -2,118 +2,104 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>ALP TECH - JJK Cursed Clash</title>
+    <title>ALP TECH - JJK Online</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #000; color: white; text-align: center; margin: 0; overflow: hidden; }
-        .screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; position: absolute; width: 100%; top: 0; left: 0; background: #0a0a0a; z-index: 10; }
+        /* Sayfa Ayarları */
+        body { margin: 0; background: #111; color: white; font-family: sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        
+        /* Ekranlar */
+        .screen { position: absolute; text-align: center; background: rgba(20, 20, 20, 0.95); padding: 50px; border-radius: 20px; border: 2px solid #5d00ff; z-index: 100; }
         .hidden { display: none !important; }
         
-        button { background: #5d00ff; border: none; color: white; padding: 15px 40px; font-size: 18px; cursor: pointer; border-radius: 50px; margin: 10px; box-shadow: 0 4px 15px rgba(93, 0, 255, 0.4); }
-        
-        .char-container { display: flex; gap: 20px; }
-        .card { width: 120px; height: 160px; border: 2px solid #333; border-radius: 15px; cursor: pointer; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
-        .card.selected { border-color: #00ffcc; transform: translateY(-10px); }
+        button { background: #5d00ff; border: none; color: white; padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 10px; margin: 10px; }
+        button:hover { background: #7b2cff; }
 
-        /* Oyun Arenası */
-        #game-container { display: none; width: 100vw; height: 100vh; background: #111; position: relative; }
-        canvas { background: #222; border: 2px solid #444; margin-top: 50px; }
+        .char-box { display: flex; gap: 15px; margin: 20px 0; }
+        .card { padding: 20px; border: 2px solid #444; cursor: pointer; border-radius: 10px; background: #222; }
+        .card.active { border-color: #00ffcc; background: #333; }
+
+        /* Oyun Kanvası */
+        #canvas-wrapper { display: none; text-align: center; }
+        canvas { background: #000; border: 3px solid #333; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="menu-screen" class="screen">
-        <h1>JUJUTSU KAISEN</h1>
-        <button onclick="showScreen('char-screen')">OYUNA BAŞLA</button>
+    <div id="start-screen" class="screen">
+        <h1>JJK: CURSED CLASH</h1>
+        <p>ALP TECH Sunar</p>
+        <button onclick="goCharSelect()">OYUNA GİR</button>
     </div>
 
     <div id="char-screen" class="screen hidden">
-        <h2>KARAKTERİNİ SEÇ</h2>
-        <div class="char-container">
-            <div class="card" onclick="selectChar('Yuji', this)"> 👊<br>Yuji </div>
-            <div class="card" onclick="selectChar('Gojo', this)"> ♾️<br>Gojo </div>
-            <div class="card" onclick="selectChar('Sukuna', this)"> 🔪<br>Sukuna </div>
+        <h2>Karakterini Seç</h2>
+        <div class="char-box">
+            <div class="card" id="btn-Yuji" onclick="pick('Yuji')">Yuji</div>
+            <div class="card" id="btn-Gojo" onclick="pick('Gojo')">Gojo</div>
+            <div class="card" id="btn-Sukuna" onclick="pick('Sukuna')">Sukuna</div>
         </div>
-        <button id="start-btn" class="hidden" onclick="initGame()">DÖVÜŞÜ BAŞLAT</button>
+        <button id="fight-btn" class="hidden" onclick="startFight()">DÖVÜŞ!</button>
     </div>
 
-    <div id="game-container">
-        <canvas id="game-canvas" width="800" height="400"></canvas>
-        <p>Hareket: Ok Tuşları | Zıplama: Yukarı Ok</p>
+    <div id="canvas-wrapper">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <p>Hareket: OK TUŞLARI | ALP TECH JJK v1.0</p>
     </div>
 
     <script>
-        let selectedCharacter = "";
-        const canvas = document.getElementById('game-canvas');
+        let hero = "";
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const keys = {};
+        const tuşlar = {};
 
-        // Ekran Yönetimi
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            if(id !== 'none') document.getElementById(id).classList.remove('hidden');
+        // Fonksiyonlar
+        function goCharSelect() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('char-screen').classList.remove('hidden');
         }
 
-        // Karakter Seçimi
-        function selectChar(name, element) {
-            selectedCharacter = name;
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
-            element.classList.add('selected');
-            document.getElementById('start-btn').classList.remove('hidden');
+        function pick(isim) {
+            hero = isim;
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.getElementById('btn-' + isim).classList.add('active');
+            document.getElementById('fight-btn').classList.remove('hidden');
         }
 
-        // Oyuncu Bilgileri
-        const player = { x: 50, y: 300, w: 50, h: 80, color: '#00ffcc', speed: 5, dy: 0, jumpPower: -15, grounded: false };
+        // Oyuncu Objesi
+        const p = { x: 100, y: 300, w: 40, h: 70, dy: 0, yer: true };
 
-        function initGame() {
-            showScreen('none'); // Menüleri kapat
-            document.getElementById('game-container').style.display = 'block';
-            window.addEventListener('keydown', e => keys[e.code] = true);
-            window.addEventListener('keyup', e => keys[e.code] = false);
-            gameLoop();
+        function startFight() {
+            document.getElementById('char-screen').classList.add('hidden');
+            document.getElementById('canvas-wrapper').style.display = 'block';
+            
+            window.addEventListener('keydown', e => tuşlar[e.code] = true);
+            window.addEventListener('keyup', e => tuşlar[e.code] = false);
+            
+            döngü();
         }
 
-        function update() {
-            // Sağ-Sol Hareket
-            if (keys['ArrowRight']) player.x += player.speed;
-            if (keys['ArrowLeft']) player.x -= player.speed;
+        function döngü() {
+            // Hareket
+            if (tuşlar['ArrowRight']) p.x += 5;
+            if (tuşlar['ArrowLeft']) p.x -= 5;
+            if (tuşlar['ArrowUp'] && p.yer) { p.dy = -15; p.yer = false; }
 
-            // Zıplama ve Yerçekimi
-            if (keys['ArrowUp'] && player.grounded) {
-                player.dy = player.jumpPower;
-                player.grounded = false;
-            }
+            // Fizik
+            p.dy += 0.8;
+            p.y += p.dy;
+            if (p.y > 310) { p.y = 310; p.dy = 0; p.yer = true; }
 
-            player.dy += 0.8; // Yerçekimi
-            player.y += player.dy;
-
-            // Yere çarpma kontrolü
-            if (player.y + player.h > 380) {
-                player.y = 380 - player.h;
-                player.dy = 0;
-                player.grounded = true;
-            }
-        }
-
-        function draw() {
-            ctx.fillStyle = "#222";
-            ctx.fillRect(0, 0, canvas.width, canvas.height); // Arka planı temizle
-
-            // Yer
-            ctx.fillStyle = "#444";
-            ctx.fillRect(0, 380, 800, 20);
-
-            // Oyuncu
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.w, player.h);
+            // Çizim
+            ctx.fillStyle = "#000"; ctx.fillRect(0,0,800,400); // Temizle
+            ctx.fillStyle = "#333"; ctx.fillRect(0, 380, 800, 20); // Yer
+            
+            ctx.fillStyle = (hero === "Gojo") ? "white" : (hero === "Sukuna" ? "red" : "pink");
+            ctx.fillRect(p.x, p.y, p.w, p.h); // Karakter
             
             ctx.fillStyle = "white";
-            ctx.fillText(selectedCharacter, player.x, player.y - 10);
-        }
+            ctx.fillText(hero, p.x, p.y - 10);
 
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
+            requestAnimationFrame(döngü);
         }
     </script>
 </body>
